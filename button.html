@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" width="device-width" initial-scale=1.0>
+    <title>Copy WeChat ID Button</title>
+    <style>
+        button {
+            background-color: #1aad19; /* 修改为微信绿 */
+            color: white; /* 修改为微信白 */
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px; /* 适当减小内边距，让整体更紧凑 */
+            cursor: pointer;
+            font-size: 16px; /* 适当增大字体大小 */
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 120px; /* 减小宽度 */
+            height: 40px; /* 减小高度 */
+            display: flex;
+            justify-content: center; /* 水平居中 */
+            align-items: center; /* 垂直居中 */
+            -webkit-user-select: none; /* 禁止选中文本，针对webkit内核浏览器（如Chrome、Safari等） */
+            -moz-user-select: none; /* 禁止选中文本，针对Firefox浏览器 */
+            -ms-user-select: none; /* 禁止选中文本，针对IE浏览器 */
+            user-select: none; /* 标准属性，禁止选中文本 */
+            white-space: nowrap; /* 确保文字不换行，即使文本内容长也不会超出按钮（新的关键设置） */
+            overflow: hidden; /* 超出部分隐藏（主要针对可能存在的其他溢出情况，比如子元素超出等） */
+        }
+    </style>
+</head>
+
+<body>
+    <button id="copyButton">点击复制</button>
+    <script>
+        const copyButton = document.getElementById('copyButton');
+
+        // 定义函数用于设置禁止右键和复制相关的事件绑定
+        function disableContextAndCopy() {
+            // 阻止按钮右键菜单弹出
+            copyButton.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+            });
+
+            // 阻止按钮文字被复制（通过禁止选中文本，在CSS中也设置了相关属性进一步确保）
+            copyButton.addEventListener('selectstart', function (e) {
+                e.preventDefault();
+            });
+        }
+
+        // 页面加载完成时调用函数，设置初始的禁止右键和复制限制
+        window.onload = function () {
+            disableContextAndCopy();
+        };
+
+        copyButton.addEventListener('click', async function () {
+            // 弹出确认框询问是否同意协议
+            const agree = confirm('是否已阅读并同意以上协议');
+            if (agree) {
+                let copied = false;
+                if (navigator.clipboard) {
+                    try {
+                        await navigator.clipboard.writeText('copyid');
+                        copied = true;
+                        copyButton.textContent = '复制成功';
+                        copyButton.removeEventListener('click', this);
+                        copyButton.style.cursor = 'default';
+                        copyButton.style.pointerEvents = 'none';
+                        // 按钮点击后且复制成功，再次调用函数确保限制依然生效
+                        disableContextAndCopy();
+                    } catch (err) {
+                        console.error('复制失败: ', err);
+                    }
+                }
+                if (!copied) {
+                    // 采用备用的复制方式（通过创建文本框模拟复制）
+                    const textarea = document.createElement('textarea');
+                    textarea.value = 'copyid';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    const result = document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    if (result) {
+                        copied = true;
+                        copyButton.textContent = '复制成功';
+                        copyButton.removeEventListener('click', this);
+                        copyButton.style.cursor = 'default';
+                        copyButton.style.pointerEvents = 'none';
+                        // 按钮点击后且复制成功，再次调用函数确保限制依然生效
+                        disableContextAndCopy();
+                    }
+                }
+                if (!copied) {
+                    // 如果两种方式都失败，弹出提示让用户手动复制
+                    alert('请手动复制复制：copyid');
+                }
+            } else {
+                copyButton.textContent = '无法复制';
+                copyButton.removeEventListener('click', this);
+                copyButton.style.cursor = 'default';
+                copyButton.style.pointerEvents = 'none';
+                // 按钮点击后，不同意协议时，再次调用函数确保限制依然生效
+                disableContextAndCopy();
+            }
+        });
+    </script>
+</body>
+</html>
